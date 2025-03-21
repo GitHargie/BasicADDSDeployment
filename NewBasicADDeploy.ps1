@@ -9,19 +9,22 @@
 # - Server renamed properly
 # - Volumes already configure properly
 # - Best of all, Operating system is updated!
+# - Run this
 
 # -- Start --
 Clear-Host
 
 # 1. Set Variables:
-$dom = "hcdom.local"  															#Replace the string of the actual name of your Domain.
-$nb = "HCDOM"            														#Assuming your $domainName variable contains "hcdomain.local," you might use "hcdomain" as the NetBIOS name.
-$dcmode = "WinThreshold"														#Specifies the domain functional level of the first domain in the creation of a new forest. 
-$formode = "WinThreshold"														#Specifies the forest functional level for the new forest.
-$pass = Read-Host -AsSecureString -Prompt "Enter Password for ADDS"  			#Type in the administrator password secretly.
-$dns1 = "192.168.100.105"	 													#Replace the string of the actual primary dns address.
-$dns2 = "8.8.8.8"			 													#Replace the string of the actual secondary dns address.
-$netinterface = "Ethernet" 														#Replace the string of the actual name of your network interface. In this one, we assume that the network interface name has a string of "Ethernet".
+$dom = "hcdom.local"  													#Replace the string of the actual name of your Domain.
+$nb = "HCDOM"            												#Assuming your $domainName variable contains "hcdomain.local," you might use "hcdomain" as the NetBIOS name.
+$dcmode = "WinThreshold"												#Specifies the domain functional level of the first domain in the creation of a new forest. 
+$formode = "WinThreshold"												#Specifies the forest functional level for the new forest.
+
+#Type in the administrator password secretly.
+$pass = Read-Host -AsSecureString -Prompt "Enter Password for ADDS"  			
+$dns1 = "192.168.100.105"	 											#Replace the string of the actual primary dns address.
+$dns2 = "8.8.8.8"			 											#Replace the string of the actual secondary dns address.
+$netinterface = "Ethernet" 												#Replace the string of the actual name of your network interface. In this one, we assume that the network interface name has a string of "Ethernet".
 
 # 2. Install the Active Directory Role:
 Install-WindowsFeature AD-Domain-Services -IncludeManagementTools
@@ -79,21 +82,6 @@ Get-DnsServerResourceRecord -ZoneName $zoneName
 # 14. DCDIAG test
 dcdiag /v /c /d /e /s:$(hostname) > c:\dcdiag.txt
 
-# 15. Disable Password Length and Complexity (optional)
-# Import Active Directory module
-Import-Module ActiveDirectory
-
-# 16.Disable password length and complexity requirements (optional, not recommended for production, don't be an idiot!)
-#Set-ADDefaultDomainPasswordPolicy -Identity $Domain -ComplexityEnabled $false -MinPasswordLength 0
-#Write-Host "Password length and complexity requirements have been disabled for the domain: $Domain" -ForegroundColor Green
-
-# 17. Verify the changes to the password policy
-#$PasswordPolicy = Get-ADDefaultDomainPasswordPolicy -Identity $Domain
-#Write-Host "Verification Results:" -ForegroundColor Cyan
-#Write-Host "Minimum Password Length: $($PasswordPolicy.MinPasswordLength)" -ForegroundColor Yellow
-#Write-Host "Password Complexity Enabled: $($PasswordPolicy.ComplexityEnabled)" -ForegroundColor Yellow
-
-
 $response = Read-Host -Prompt "Deployment completed. Do you want to restart the computer now? (Y/N)"
 if ($response -eq "Y") {
     Restart-Computer
@@ -103,12 +91,25 @@ if ($response -eq "Y") {
 
 
 
-
 # -- Post Deployment --
 # - Copy the commands below in a separate PowerShell instance.
-# 16. Specify the domain (use the DN of your domain if needed; otherwise, it will target the current domain). Uncomment the command below.
+# 15. Specify the domain (use the DN of your domain if needed; otherwise, it will target the current domain). Uncomment the commands below.
+#Import-Module ActiveDirectory
 #$Domain = (Get-ADDomain).DistinguishedName
 
-#19. After the server restarted, verify AD DS Installation and Replication.  Uncomment the command below.
+# 16. After the server restarted, verify AD DS Installation and Replication.  Uncomment the commands below.
 #Get-ADDomainController -Identity $env:COMPUTERNAME
 #Repadmin /replsummary
+#dcdiag /v /c /d /e /s:$(hostname) > c:\dcdiag.txt
+
+# - Optional configuration
+# 1.Disable password length and complexity requirements (optional, not recommended for production, don't be an idiot!)
+#Import-Module ActiveDirectory
+#Set-ADDefaultDomainPasswordPolicy -Identity $Domain -ComplexityEnabled $false -MinPasswordLength 0
+#Write-Host "Password length and complexity requirements have been disabled for the domain: $Domain" -ForegroundColor Green
+
+# 18. Verify the changes to the password policy
+#$PasswordPolicy = Get-ADDefaultDomainPasswordPolicy -Identity $Domain
+#Write-Host "Verification Results:" -ForegroundColor Cyan
+#Write-Host "Minimum Password Length: $($PasswordPolicy.MinPasswordLength)" -ForegroundColor Yellow
+#Write-Host "Password Complexity Enabled: $($PasswordPolicy.ComplexityEnabled)" -ForegroundColor Yellow
