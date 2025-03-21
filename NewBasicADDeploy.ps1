@@ -21,7 +21,8 @@ $dcmode = "WinThreshold"												#Specifies the domain functional level of th
 $formode = "WinThreshold"												#Specifies the forest functional level for the new forest.
 
 #Type in the administrator password secretly.
-$pass = Read-Host -AsSecureString -Prompt "Enter Password for ADDS"  			
+$cred = Get-Credential
+$pass = $cred.Password  
 $dns1 = "192.168.100.105"	 											#Replace the string of the actual primary dns address.
 $dns2 = "8.8.8.8"			 											#Replace the string of the actual secondary dns address.
 $netinterface = "Ethernet" 												#Replace the string of the actual name of your network interface. In this one, we assume that the network interface name has a string of "Ethernet".
